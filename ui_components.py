@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import re
 from PySide6.QtWidgets import QTextEdit
 from PySide6.QtGui import QFont, QTextCursor
 

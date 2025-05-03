@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 from terminal_executor import TerminalExecutor
 from llm_thread import LLMThread
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QKeyEvent
 
 class CommandHandlers:
     """
@@ -43,20 +41,14 @@ class CommandHandlers:
     
     @staticmethod
     def handle_command_output(window, command, output, exit_code):
-        print(f"DEBUG: CommandHandlers.handle_command_output called with command: {command}, exit_code: {exit_code}")
-        print(f"DEBUG: Output length: {len(output) if output else 0}")
-        print(f"DEBUG: Output content: {output}")
-        
         # Check if terminal_output exists
         if not hasattr(window, 'terminal_output'):
             print("ERROR: window.terminal_output does not exist!")
             return
             
         # Display in terminal output
-        print(f"DEBUG: About to call window.terminal_output.add_output")
         try:
             window.terminal_output.add_output(command, output, exit_code)
-            print(f"DEBUG: Called window.terminal_output.add_output successfully")
         except Exception as e:
             print(f"ERROR in terminal_output.add_output: {str(e)}")
         
@@ -66,8 +58,6 @@ class CommandHandlers:
         # If command failed, send to LLM for analysis
         if exit_code != 0:
             window.analyze_error(command, output, exit_code)
-            
-        print(f"DEBUG: CommandHandlers.handle_command_output completed for command: {command}")
     
     @staticmethod
     def analyze_error(window, command, output, exit_code):
@@ -81,10 +71,13 @@ class CommandHandlers:
         window.chat_window.add_message("System", "Analyzing command failure...")
         
         # Process with LLM
-        window.llm_thread = LLMThread(
+        llm_thread = LLMThread(
             error_message,
-            window.memory_manager.get_recent_conversations()
+            window.memory_manager.get_messages()
         )
-        window.llm_thread.response_ready.connect(window.handle_llm_response)
-        window.llm_thread.command_ready.connect(window.execute_command)
-        window.llm_thread.start()
+        llm_thread.response_ready.connect(window.handle_llm_response)
+        llm_thread.command_ready.connect(window.execute_command)
+        llm_thread.start()
+        
+        # Add to active threads
+        window.active_threads.append(llm_thread)

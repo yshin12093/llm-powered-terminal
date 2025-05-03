@@ -6,7 +6,6 @@ import ollama
 
 # Import custom modules
 from memory_manager import MemoryManager
-from file_analyzer import FileAnalyzer
 from main_window_handlers import MainWindowHandlers
 from ui_setup import UISetup
 
@@ -31,27 +30,20 @@ class MainWindow(QMainWindow):
         
         # Initialize components
         self.memory_manager = MemoryManager()
-        self.file_analyzer = FileAnalyzer()
         
         # Set up window properties
         self.setWindowTitle("LLM-Powered Terminal")
         self.setMinimumSize(800, 600)
         self.setStyleSheet("background-color: #1e1e1e; color: #f0f0f0;")
         
-        # Set up event handlers first - this will define all the handler methods
-        MainWindowHandlers.setup_handlers(self)
-        
-        # Now set up UI - this will connect signals to the handlers
+        # Set up UI first - this will create all the UI components
         UISetup.setup_ui(self)
         
-        # Connect file analyzer signal
-        self.file_analyzer.analysis_complete.connect(self.handle_file_analysis)
+        # Now set up event handlers - this will connect signals to the handlers
+        MainWindowHandlers.setup_handlers(self)
         
         # Track active threads
         self.active_threads = []
-        
-        # Show welcome message
-        self.chat_window.add_message("Assistant", "Welcome to LLM-Powered Terminal using Ollama with Llama 3.\n\nHow can I help you today?")
         
     def closeEvent(self, event):
         """Clean up threads when the application is closed"""
